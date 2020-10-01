@@ -1,0 +1,7 @@
+update-interval: 5
+warps:
+  enabled: true
+  label: "%warp%"
+homes:
+  enabled: true
+  label: "%home% (%player%'s home)"
