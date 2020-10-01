@@ -76,28 +76,17 @@ public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPILis
     }
 
     private void loadImages() {
-        BufferedImage homeIcon, warpIcon;
         try (InputStream homeImage = getResource("home.png")) {
             if (homeImage != null) {
-                homeIcon = ImageIO.read(homeImage);
-                Method createImage = blueMap.getClass().getDeclaredMethod("createImage", BufferedImage.class, String.class);
-                Object homeImageURLObject = createImage.invoke(blueMap, homeIcon, "essentials/home");
-                if (homeImageURLObject instanceof String) {
-                    this.homeImageURL = (String) homeImageURLObject;
-                }
+                this.homeImageURL = blueMap.createImage(ImageIO.read(homeImage), "essentials/home");
             }
-        } catch (IOException | NoSuchMethodException | AbstractMethodError | IllegalAccessException | InvocationTargetException ignored) {
+        } catch (IOException ignored) {
         }
         try (InputStream warpImage = getResource("warp.png")) {
             if (warpImage != null) {
-                warpIcon = ImageIO.read(warpImage);
-                Method createImage = blueMap.getClass().getDeclaredMethod("createImage", BufferedImage.class, String.class);
-                Object warpImageURLObject = createImage.invoke(blueMap, warpIcon, "essentials/warp");
-                if (warpImageURLObject instanceof String) {
-                    this.warpImageURL = (String) warpImageURLObject;
-                }
+                this.warpImageURL = blueMap.createImage(ImageIO.read(warpImage), "essentials/warp");
             }
-        } catch (IOException | NoSuchMethodException | AbstractMethodError | IllegalAccessException | InvocationTargetException ignored) {
+        } catch (IOException ignored) {
         }
     }
 
