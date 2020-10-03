@@ -91,19 +91,14 @@ public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPILis
         if (essentials == null) {
             return;
         }
-        final MarkerAPI markerAPI;
         try {
-            markerAPI = blueMap.getMarkerAPI();
-        } catch (IOException e) {
-            return;
-        }
-        if (warpsEnabled) {
-            addWarpMarkers(markerAPI);
-        }
-        if (homesEnabled) {
-            addHomeMarkers(markerAPI);
-        }
-        try {
+            final MarkerAPI markerAPI = blueMap.getMarkerAPI();
+            if (warpsEnabled) {
+                addWarpMarkers(markerAPI);
+            }
+            if (homesEnabled) {
+                addHomeMarkers(markerAPI);
+            }
             markerAPI.save();
         } catch (IOException ignored) {
         }
@@ -172,23 +167,18 @@ public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPILis
         if (essentials == null) {
             return;
         }
-        final MarkerAPI markerAPI;
         try {
-            markerAPI = blueMap.getMarkerAPI();
-        } catch (IOException e) {
-            return;
-        }
-        if (warpsEnabled) {
-            final MarkerSet markerSetWarps = markerAPI.createMarkerSet(MARKERSET_LABEL_WARPS);
-            warpMarkers.forEach(markerSetWarps::removeMarker);
-            warpMarkers.clear();
-        }
-        if (homesEnabled) {
-            final MarkerSet markerSetHomes = markerAPI.createMarkerSet(MARKERSET_LABEL_HOMES);
-            homeMarkers.forEach(markerSetHomes::removeMarker);
-            homeMarkers.clear();
-        }
-        try {
+            final MarkerAPI markerAPI = blueMap.getMarkerAPI();
+            if (warpsEnabled) {
+                final MarkerSet markerSetWarps = markerAPI.createMarkerSet(MARKERSET_LABEL_WARPS);
+                warpMarkers.forEach(markerSetWarps::removeMarker);
+                warpMarkers.clear();
+            }
+            if (homesEnabled) {
+                final MarkerSet markerSetHomes = markerAPI.createMarkerSet(MARKERSET_LABEL_HOMES);
+                homeMarkers.forEach(markerSetHomes::removeMarker);
+                homeMarkers.clear();
+            }
             markerAPI.save();
         } catch (IOException ignored) {
         }
