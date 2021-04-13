@@ -33,7 +33,8 @@ public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPILis
     private long updateInterval;
     private boolean warpsEnabled, homesEnabled;
     private String warpLabelFormat, homeLabelFormat;
-    private final String MARKERSET_LABEL_HOMES = "homes", MARKERSET_LABEL_WARPS = "warps";
+    private final String MARKERSET_ID_HOMES = "homes", MARKERSET_ID_WARPS = "warps";
+    private final String MARKERSET_LABEL_HOMES = "Homes", MARKERSET_LABEL_WARPS = "Warps";
 
     @Override
     public void onEnable() {
@@ -107,7 +108,8 @@ public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPILis
     private void addWarpMarkers(MarkerAPI markerAPI) {
         IWarps warps = essentials.getWarps();
         for (final String warp : warps.getList()) {
-            final MarkerSet markerSetWarps = markerAPI.createMarkerSet(MARKERSET_LABEL_WARPS);
+            final MarkerSet markerSetWarps = markerAPI.createMarkerSet(MARKERSET_ID_WARPS);
+            markerSetWarps.setLabel(MARKERSET_LABEL_WARPS);
             final Location warpLocation;
             try {
                 warpLocation = warps.getWarp(warp);
@@ -135,7 +137,8 @@ public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPILis
     private void addHomeMarkers(MarkerAPI markerAPI) {
         UserMap userMap = essentials.getUserMap();
         for (Player player : getServer().getOnlinePlayers()) {
-            final MarkerSet markerSetHomes = markerAPI.createMarkerSet(MARKERSET_LABEL_HOMES);
+            final MarkerSet markerSetHomes = markerAPI.createMarkerSet(MARKERSET_ID_HOMES);
+            markerSetHomes.setLabel(MARKERSET_LABEL_HOMES);
             final User user = userMap.getUser(player.getUniqueId());
             for (final String home : user.getHomes()) {
                 final Location homeLocation;
@@ -169,13 +172,17 @@ public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPILis
         }
         try {
             final MarkerAPI markerAPI = blueMap.getMarkerAPI();
+            markerAPI.removeMarkerSet(MARKERSET_ID_WARPS);
             if (warpsEnabled) {
-                final MarkerSet markerSetWarps = markerAPI.createMarkerSet(MARKERSET_LABEL_WARPS);
+                final MarkerSet markerSetWarps = markerAPI.createMarkerSet(MARKERSET_ID_WARPS);
+                markerSetWarps.setLabel(MARKERSET_LABEL_WARPS);
                 warpMarkers.forEach(markerSetWarps::removeMarker);
                 warpMarkers.clear();
             }
+            markerAPI.removeMarkerSet(MARKERSET_ID_HOMES);
             if (homesEnabled) {
-                final MarkerSet markerSetHomes = markerAPI.createMarkerSet(MARKERSET_LABEL_HOMES);
+                final MarkerSet markerSetHomes = markerAPI.createMarkerSet(MARKERSET_ID_HOMES);
+                markerSetHomes.setLabel(MARKERSET_LABEL_HOMES);
                 homeMarkers.forEach(markerSetHomes::removeMarker);
                 homeMarkers.clear();
             }
