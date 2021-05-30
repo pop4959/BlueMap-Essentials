@@ -22,8 +22,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPIListener {
     private IEssentials essentials;
@@ -35,6 +38,7 @@ public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPILis
     private String warpLabelFormat, homeLabelFormat;
     private final String MARKERSET_ID_HOMES = "homes", MARKERSET_ID_WARPS = "warps";
     private final String MARKERSET_LABEL_HOMES = "Homes", MARKERSET_LABEL_WARPS = "Warps";
+    private boolean homesOnlinePlayersOnly;
 
     @Override
     public void onEnable() {
@@ -49,6 +53,7 @@ public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPILis
         this.homesEnabled = getConfig().getBoolean("homes.enabled", true);
         this.warpLabelFormat = getConfig().getString("warps.label", "%warp%");
         this.homeLabelFormat = getConfig().getString("homes.label", "%home% (%player%'s home)");
+        this.homesOnlinePlayersOnly = getConfig().getBoolean("homes.online-players-only", true);
         BlueMapAPI.registerListener(this);
         new Metrics(this, 9011);
     }
@@ -135,11 +140,17 @@ public final class BlueMapEssentials extends JavaPlugin implements BlueMapAPILis
     }
 
     private void addHomeMarkers(MarkerAPI markerAPI) {
-        UserMap userMap = essentials.getUserMap();
-        for (Player player : getServer().getOnlinePlayers()) {
+        final UserMap userMap = essentials.getUserMap();
+        final Collection<UUID> users;
+        if (homesOnlinePlayersOnly) {
+            users = getServer().getOnlinePlayers().stream().map(Player::getUniqueId).collect(Collectors.toSet());
+        } else {
+            users = userMap.getAllUniqueUsers();
+        }
+        for (UUID uuid : users) {
             final MarkerSet markerSetHomes = markerAPI.createMarkerSet(MARKERSET_ID_HOMES);
             markerSetHomes.setLabel(MARKERSET_LABEL_HOMES);
-            final User user = userMap.getUser(player.getUniqueId());
+            final User user = userMap.getUser(uuid);
             for (final String home : user.getHomes()) {
                 final Location homeLocation;
                 try {
