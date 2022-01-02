@@ -1,5 +1,5 @@
 name: BlueMap-Essentials
-version: ${project.version}
+version: ${version}
 main: org.popcraft.bluemapessentials.BlueMapEssentials
 api-version: 1.16
 depend: [BlueMap, Essentials]
