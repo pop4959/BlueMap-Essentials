@@ -3,11 +3,11 @@ plugins {
 }
 
 group = "org.popcraft"
-version = "1.0.4"
+version = "1.1.0"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
 
@@ -26,14 +26,14 @@ repositories {
     mavenCentral()
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://oss.sonatype.org/content/groups/public/")
-    maven("https://ci.ender.zone/plugin/repository/everything/")
+    maven("https://repo.essentialsx.net/releases/")
     maven("https://jitpack.io")
 }
 
 dependencies {
-    compileOnly("org.spigotmc:spigot-api:1.18.1-R0.1-SNAPSHOT")
-    compileOnly("com.github.BlueMap-Minecraft:BlueMapAPI:v1.3.0")
-    compileOnly("net.ess3:EssentialsX:2.18.2") {
+    compileOnly("org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
+    compileOnly("com.github.BlueMap-Minecraft:BlueMapAPI:v2.1.0")
+    compileOnly("net.essentialsx:EssentialsX:2.19.6") {
         isTransitive = false
     }
 }
