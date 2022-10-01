@@ -1,5 +1,6 @@
 plugins {
     id("java-library")
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "org.popcraft"
@@ -20,6 +21,18 @@ tasks {
             expand("version" to project.version)
         }
     }
+    jar {
+        archiveClassifier.set("noshade")
+    }
+    shadowJar {
+        minimize()
+        archiveClassifier.set("")
+        archiveFileName.set("${rootProject.name.capitalize()}-${project.version}.jar")
+        relocate("org.bstats", "org.popcraft.bluemapessentials.bstats")
+    }
+    build {
+        dependsOn(shadowJar)
+    }
 }
 
 repositories {
@@ -36,4 +49,5 @@ dependencies {
     compileOnly("net.essentialsx:EssentialsX:2.19.6") {
         isTransitive = false
     }
+    implementation(group = "org.bstats", name = "bstats-bukkit", version = "3.0.0")
 }
