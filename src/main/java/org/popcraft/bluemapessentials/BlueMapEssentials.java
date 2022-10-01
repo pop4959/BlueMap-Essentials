@@ -11,6 +11,7 @@ import de.bluecolored.bluemap.api.BlueMapAPI;
 import de.bluecolored.bluemap.api.markers.MarkerSet;
 import de.bluecolored.bluemap.api.markers.POIMarker;
 import net.ess3.api.InvalidWorldException;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
