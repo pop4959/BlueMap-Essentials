@@ -98,7 +98,6 @@ public final class BlueMapEssentials extends JavaPlugin {
             return;
         }
         IWarps warps = essentials.getWarps();
-        final MarkerSet markerSetWarps = MarkerSet.builder().label(MARKERSET_LABEL_WARPS).build();
         for (final String warp : warps.getList()) {
             final Location warpLocation;
             try {
@@ -111,6 +110,7 @@ public final class BlueMapEssentials extends JavaPlugin {
                 continue;
             }
             blueMap.getWorld(warpWorld.getUID()).ifPresent(blueWorld -> blueWorld.getMaps().forEach(map -> {
+                final MarkerSet markerSetWarps = map.getMarkerSets().getOrDefault(MARKERSET_ID_WARPS, MarkerSet.builder().label(MARKERSET_LABEL_WARPS).build());
                 String warpMarkerId = String.format("warp:%s:%s", map.getName(), warp);
                 Vector3d warpMarkerPos = Vector3d.from(warpLocation.getX(), warpLocation.getY(), warpLocation.getZ());
                 POIMarker warpMarker = POIMarker.toBuilder()
@@ -136,7 +136,6 @@ public final class BlueMapEssentials extends JavaPlugin {
             users = userMap.getAllUniqueUsers();
         }
         for (UUID uuid : users) {
-            final MarkerSet markerSetHomes = MarkerSet.builder().label(MARKERSET_LABEL_HOMES).build();
             final User user = userMap.getUser(uuid);
             for (final String home : user.getHomes()) {
                 final Location homeLocation;
@@ -153,6 +152,7 @@ public final class BlueMapEssentials extends JavaPlugin {
                     continue;
                 }
                 blueMap.getWorld(homeWorld.getUID()).ifPresent(blueWorld -> blueWorld.getMaps().forEach(map -> {
+                    final MarkerSet markerSetHomes = map.getMarkerSets().getOrDefault(MARKERSET_ID_HOMES, MarkerSet.builder().label(MARKERSET_LABEL_HOMES).build());
                     String homeMarkerId = String.format("home:%s:%s", user.getName(), home);
                     Vector3d homeMarkerPos = Vector3d.from(homeLocation.getX(), homeLocation.getY(), homeLocation.getZ());
                     POIMarker homeMarker = POIMarker.toBuilder()
