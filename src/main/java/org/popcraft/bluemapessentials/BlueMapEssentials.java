@@ -137,6 +137,9 @@ public final class BlueMapEssentials extends JavaPlugin {
         }
         for (UUID uuid : users) {
             final User user = userMap.getUser(uuid);
+            if (user == null) {
+                continue;
+            }
             for (final String home : user.getHomes()) {
                 final Location homeLocation;
                 try {
