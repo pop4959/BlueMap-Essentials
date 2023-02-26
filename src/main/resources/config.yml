@@ -1,4 +1,5 @@
 update-interval: 5
+store-icons-per-map: false
 warps:
   enabled: true
   label: "%warp%"
