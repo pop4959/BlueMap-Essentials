@@ -77,12 +77,12 @@ public final class BlueMapEssentials extends JavaPlugin {
         }
     }
 
-    private String copyResourceToBlueMapWebApp(Path webroot, String fromResource, String toAsset) throws IOException {
-        Path toPath = webroot.resolve("assets").resolve(toAsset);
+    private String copyResourceToBlueMapWebApp(final Path webroot, final String fromResource, final String toAsset) throws IOException {
+        final Path toPath = webroot.resolve("assets").resolve(toAsset);
         Files.createDirectories(toPath.getParent());
         try (
-                InputStream in = getResource(fromResource);
-                OutputStream out = Files.newOutputStream(toPath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+                final InputStream in = getResource(fromResource);
+                final OutputStream out = Files.newOutputStream(toPath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
         ){
             if (in == null) throw new IOException("Resource not found: " + fromResource);
             in.transferTo(out);
