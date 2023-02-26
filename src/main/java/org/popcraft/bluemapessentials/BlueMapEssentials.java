@@ -8,6 +8,7 @@ import com.earth2me.essentials.commands.WarpNotFoundException;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3d;
 import de.bluecolored.bluemap.api.BlueMapAPI;
+import de.bluecolored.bluemap.api.BlueMapMap;
 import de.bluecolored.bluemap.api.markers.MarkerSet;
 import de.bluecolored.bluemap.api.markers.POIMarker;
 import net.ess3.api.InvalidWorldException;
@@ -31,12 +32,13 @@ import java.util.stream.Collectors;
 public final class BlueMapEssentials extends JavaPlugin {
     private static final String MARKERSET_ID_HOMES = "homes", MARKERSET_ID_WARPS = "warps";
     private static final String MARKERSET_LABEL_HOMES = "Homes", MARKERSET_LABEL_WARPS = "Warps";
+    private static final String ICON_ID_HOMES = "essentials/home.png", ICON_ID_WARPS = "essentials/warp.png";
     private IEssentials essentials;
     private BlueMapAPI blueMap;
-    private String homeImageURL, warpImageURL;
     private boolean warpsEnabled, homesEnabled;
     private String warpLabelFormat, homeLabelFormat;
     private boolean homesOnlinePlayersOnly;
+    private boolean storeIconsPerMap;
 
     @Override
     public void onEnable() {
@@ -48,6 +50,7 @@ public final class BlueMapEssentials extends JavaPlugin {
         this.warpLabelFormat = getConfig().getString("warps.label", "%warp%");
         this.homeLabelFormat = getConfig().getString("homes.label", "%home% (%player%'s home)");
         this.homesOnlinePlayersOnly = getConfig().getBoolean("homes.online-players-only", true);
+        this.storeIconsPerMap = getConfig().getBoolean("store-icons-per-map", false);
         BlueMapAPI.onEnable(blueMapAPI -> {
             this.blueMap = blueMapAPI;
             loadImages();
@@ -68,16 +71,27 @@ public final class BlueMapEssentials extends JavaPlugin {
     }
 
     private void loadImages() {
-        try {
-            this.homeImageURL = copyResourceToBlueMapWebApp(blueMap.getWebApp().getWebRoot(), "home.png", "essentials/home.png");
-            this.warpImageURL = copyResourceToBlueMapWebApp(blueMap.getWebApp().getWebRoot(), "warp.png", "essentials/warp.png");
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if(storeIconsPerMap) {
+            for(final BlueMapMap map : blueMap.getMaps()) {
+                try {
+                    copyResourceToBlueMapMap(map, "home.png", ICON_ID_HOMES);
+                    copyResourceToBlueMapMap(map, "warp.png", ICON_ID_WARPS);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } else {
+            //store icons globally, in webapp
+            try {
+                copyResourceToBlueMapWebApp(blueMap.getWebApp().getWebRoot(), "home.png", ICON_ID_HOMES);
+                copyResourceToBlueMapWebApp(blueMap.getWebApp().getWebRoot(), "warp.png", ICON_ID_WARPS);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
-    private String copyResourceToBlueMapWebApp(final Path webroot, final String fromResource, final String toAsset) throws IOException {
+    private void copyResourceToBlueMapWebApp(final Path webroot, final String fromResource, final String toAsset) throws IOException {
         final Path toPath = webroot.resolve("assets").resolve(toAsset);
         Files.createDirectories(toPath.getParent());
         try (
@@ -87,7 +101,16 @@ public final class BlueMapEssentials extends JavaPlugin {
             if (in == null) throw new IOException("Resource not found: " + fromResource);
             in.transferTo(out);
         }
-        return "assets/" + toAsset;
+    }
+
+    private void copyResourceToBlueMapMap(final BlueMapMap map, final String fromResource, final String toAsset) throws IOException {
+        try (
+                final InputStream in = getResource(fromResource);
+                final OutputStream out = map.getAssetStorage().writeAsset(toAsset)
+        ){
+            if (in == null) throw new IOException("Resource not found: " + fromResource);
+            in.transferTo(out);
+        }
     }
 
     private void addMarkers() {
@@ -102,10 +125,15 @@ public final class BlueMapEssentials extends JavaPlugin {
         }
     }
 
-    private void addWarpMarkers() {
-        if (warpImageURL == null) {
-            return;
+    private String getMarkerURL(final BlueMapMap map, final String id) {
+        if (storeIconsPerMap) {
+            return map.getAssetStorage().getAssetUrl(id);
+        } else {
+            return "assets/" + id;
         }
+    }
+
+    private void addWarpMarkers() {
         IWarps warps = essentials.getWarps();
         for (final String warp : warps.getList()) {
             final Location warpLocation;
@@ -124,7 +152,7 @@ public final class BlueMapEssentials extends JavaPlugin {
                 Vector3d warpMarkerPos = Vector3d.from(warpLocation.getX(), warpLocation.getY(), warpLocation.getZ());
                 POIMarker warpMarker = POIMarker.builder()
                         .label(warpLabelFormat.replace("%warp%", warp))
-                        .icon(warpImageURL, Vector2i.from(19, 19))
+                        .icon(getMarkerURL(map, ICON_ID_WARPS), Vector2i.from(19, 19))
                         .position(warpMarkerPos)
                         .build();
                 markerSetWarps.getMarkers().put(warpMarkerId, warpMarker);
@@ -134,9 +162,6 @@ public final class BlueMapEssentials extends JavaPlugin {
     }
 
     private void addHomeMarkers() {
-        if (homeImageURL == null) {
-            return;
-        }
         final UserMap userMap = essentials.getUserMap();
         final Collection<UUID> users;
         if (homesOnlinePlayersOnly) {
@@ -169,7 +194,7 @@ public final class BlueMapEssentials extends JavaPlugin {
                     Vector3d homeMarkerPos = Vector3d.from(homeLocation.getX(), homeLocation.getY(), homeLocation.getZ());
                     POIMarker homeMarker = POIMarker.builder()
                             .label(homeLabelFormat.replace("%home%", home).replace("%player%", user.getName()))
-                            .icon(homeImageURL, Vector2i.from(18, 18))
+                            .icon(getMarkerURL(map, ICON_ID_HOMES), Vector2i.from(18, 18))
                             .position(homeMarkerPos)
                             .build();
                     markerSetHomes.getMarkers().put(homeMarkerId, homeMarker);
