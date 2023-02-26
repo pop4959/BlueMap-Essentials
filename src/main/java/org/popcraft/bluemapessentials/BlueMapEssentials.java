@@ -17,9 +17,12 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -65,20 +68,26 @@ public final class BlueMapEssentials extends JavaPlugin {
     }
 
     private void loadImages() {
-        try (InputStream homeImage = getResource("home.png")) {
-            if (homeImage != null) {
-                this.homeImageURL = blueMap.getWebApp().createImage(ImageIO.read(homeImage), "essentials/home");
-            }
+        try {
+            this.homeImageURL = copyResourceToBlueMapWebApp(blueMap.getWebApp().getWebRoot(), "home.png", "essentials/home.png");
+            this.warpImageURL = copyResourceToBlueMapWebApp(blueMap.getWebApp().getWebRoot(), "warp.png", "essentials/warp.png");
+
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        try (InputStream warpImage = getResource("warp.png")) {
-            if (warpImage != null) {
-                this.warpImageURL = blueMap.getWebApp().createImage(ImageIO.read(warpImage), "essentials/warp");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    }
+
+    private String copyResourceToBlueMapWebApp(Path webroot, String fromResource, String toAsset) throws IOException {
+        Path toPath = webroot.resolve("assets").resolve(toAsset);
+        Files.createDirectories(toPath.getParent());
+        try (
+                InputStream in = getResource(fromResource);
+                OutputStream out = Files.newOutputStream(toPath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+        ){
+            if (in == null) throw new IOException("Resource not found: " + fromResource);
+            in.transferTo(out);
         }
+        return "assets/" + toAsset;
     }
 
     private void addMarkers() {
@@ -113,7 +122,7 @@ public final class BlueMapEssentials extends JavaPlugin {
                 final MarkerSet markerSetWarps = map.getMarkerSets().getOrDefault(MARKERSET_ID_WARPS, MarkerSet.builder().label(MARKERSET_LABEL_WARPS).build());
                 String warpMarkerId = String.format("warp:%s:%s", map.getName(), warp);
                 Vector3d warpMarkerPos = Vector3d.from(warpLocation.getX(), warpLocation.getY(), warpLocation.getZ());
-                POIMarker warpMarker = POIMarker.toBuilder()
+                POIMarker warpMarker = POIMarker.builder()
                         .label(warpLabelFormat.replace("%warp%", warp))
                         .icon(warpImageURL, Vector2i.from(19, 19))
                         .position(warpMarkerPos)
@@ -158,7 +167,7 @@ public final class BlueMapEssentials extends JavaPlugin {
                     final MarkerSet markerSetHomes = map.getMarkerSets().getOrDefault(MARKERSET_ID_HOMES, MarkerSet.builder().label(MARKERSET_LABEL_HOMES).build());
                     String homeMarkerId = String.format("home:%s:%s", user.getName(), home);
                     Vector3d homeMarkerPos = Vector3d.from(homeLocation.getX(), homeLocation.getY(), homeLocation.getZ());
-                    POIMarker homeMarker = POIMarker.toBuilder()
+                    POIMarker homeMarker = POIMarker.builder()
                             .label(homeLabelFormat.replace("%home%", home).replace("%player%", user.getName()))
                             .icon(homeImageURL, Vector2i.from(18, 18))
                             .position(homeMarkerPos)

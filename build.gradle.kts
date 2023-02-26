@@ -45,7 +45,7 @@ repositories {
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
-    compileOnly("com.github.BlueMap-Minecraft:BlueMapAPI:v2.1.0")
+    compileOnly("com.github.BlueMap-Minecraft:BlueMapAPI:v2.3.0")
     compileOnly("net.essentialsx:EssentialsX:2.19.6") {
         isTransitive = false
     }
