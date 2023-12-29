@@ -1,6 +1,8 @@
+import java.util.*
+
 plugins {
     id("java-library")
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "org.popcraft"
@@ -27,7 +29,7 @@ tasks {
     shadowJar {
         minimize()
         archiveClassifier.set("")
-        archiveFileName.set("${rootProject.name.capitalize()}-${project.version}.jar")
+        archiveFileName.set("${rootProject.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}-${project.version}.jar")
         relocate("org.bstats", "org.popcraft.bluemapessentials.bstats")
     }
     build {
@@ -44,10 +46,10 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
     compileOnly("com.github.BlueMap-Minecraft:BlueMapAPI:v2.3.0")
     compileOnly("net.essentialsx:EssentialsX:2.19.6") {
         isTransitive = false
     }
-    implementation(group = "org.bstats", name = "bstats-bukkit", version = "3.0.0")
+    implementation(group = "org.bstats", name = "bstats-bukkit", version = "3.0.2")
 }
