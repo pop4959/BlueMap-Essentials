@@ -6,8 +6,6 @@ warps:
   toggleable: true
   default-hidden: false
   sorting: 0
-  min-distance: 0.0
-  max-distance: 1000.0
 homes:
   enabled: true
   label: "%home% (%player%'s home)"
@@ -15,5 +13,3 @@ homes:
   toggleable: true
   default-hidden: false
   sorting: 0
-  min-distance: 0.0
-  max-distance: 1000.0
