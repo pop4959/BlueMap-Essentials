@@ -3,7 +3,17 @@ store-icons-per-map: false
 warps:
   enabled: true
   label: "%warp%"
+  toggleable: true
+  default-hidden: false
+  sorting: 0
+  min-distance: 0.0
+  max-distance: 1000.0
 homes:
   enabled: true
   label: "%home% (%player%'s home)"
   online-players-only: true
+  toggleable: true
+  default-hidden: false
+  sorting: 0
+  min-distance: 0.0
+  max-distance: 1000.0
