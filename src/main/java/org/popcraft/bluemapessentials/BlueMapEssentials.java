@@ -39,18 +39,38 @@ public final class BlueMapEssentials extends JavaPlugin {
     private String warpLabelFormat, homeLabelFormat;
     private boolean homesOnlinePlayersOnly;
     private boolean storeIconsPerMap;
+    private boolean warpsToggleable, homesToggleable;
+    private boolean warpsDefaultHidden, homesDefaultHidden;
+    private int warpsSorting, homesSorting;
+    private double warpsMinDistance, homesMinDistance;
+    private double warpsMaxDistance, homesMaxDistance;
 
     @Override
     public void onEnable() {
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
+
         this.essentials = (IEssentials) getServer().getPluginManager().getPlugin("Essentials");
+
+        this.storeIconsPerMap = getConfig().getBoolean("store-icons-per-map", false);
+
         this.warpsEnabled = getConfig().getBoolean("warps.enabled", true);
-        this.homesEnabled = getConfig().getBoolean("homes.enabled", true);
         this.warpLabelFormat = getConfig().getString("warps.label", "%warp%");
+        this.warpsToggleable = getConfig().getBoolean("warps.toggleable", true);
+        this.warpsDefaultHidden = getConfig().getBoolean("warps.default-hidden", false);
+        this.warpsSorting = getConfig().getInt("warps.sorting", 0);
+        this.warpsMinDistance = getConfig().getDouble("warps.min-distance", 0d);
+        this.warpsMaxDistance = getConfig().getDouble("warps.max-distance", Double.MAX_VALUE);
+
+        this.homesEnabled = getConfig().getBoolean("homes.enabled", true);
         this.homeLabelFormat = getConfig().getString("homes.label", "%home% (%player%'s home)");
         this.homesOnlinePlayersOnly = getConfig().getBoolean("homes.online-players-only", true);
-        this.storeIconsPerMap = getConfig().getBoolean("store-icons-per-map", false);
+        this.homesToggleable = getConfig().getBoolean("homes.toggleable", true);
+        this.homesDefaultHidden = getConfig().getBoolean("homes.default-hidden", false);
+        this.homesSorting = getConfig().getInt("homes.sorting", 0);
+        this.homesMinDistance = getConfig().getDouble("homes.min-distance", 0d);
+        this.homesMaxDistance = getConfig().getDouble("homes.max-distance", Double.MAX_VALUE);
+
         BlueMapAPI.onEnable(blueMapAPI -> {
             this.blueMap = blueMapAPI;
             loadImages();
@@ -71,8 +91,8 @@ public final class BlueMapEssentials extends JavaPlugin {
     }
 
     private void loadImages() {
-        if(storeIconsPerMap) {
-            for(final BlueMapMap map : blueMap.getMaps()) {
+        if (storeIconsPerMap) {
+            for (final BlueMapMap map : blueMap.getMaps()) {
                 try {
                     copyResourceToBlueMapMap(map, "home.png", ICON_ID_HOMES);
                     copyResourceToBlueMapMap(map, "warp.png", ICON_ID_WARPS);
@@ -97,7 +117,7 @@ public final class BlueMapEssentials extends JavaPlugin {
         try (
                 final InputStream in = getResource(fromResource);
                 final OutputStream out = Files.newOutputStream(toPath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
-        ){
+        ) {
             if (in == null) throw new IOException("Resource not found: " + fromResource);
             in.transferTo(out);
         }
@@ -107,7 +127,7 @@ public final class BlueMapEssentials extends JavaPlugin {
         try (
                 final InputStream in = getResource(fromResource);
                 final OutputStream out = map.getAssetStorage().writeAsset(toAsset)
-        ){
+        ) {
             if (in == null) throw new IOException("Resource not found: " + fromResource);
             in.transferTo(out);
         }
@@ -147,13 +167,20 @@ public final class BlueMapEssentials extends JavaPlugin {
                 continue;
             }
             blueMap.getWorld(warpWorld.getUID()).ifPresent(blueWorld -> blueWorld.getMaps().forEach(map -> {
-                final MarkerSet markerSetWarps = map.getMarkerSets().getOrDefault(MARKERSET_ID_WARPS, MarkerSet.builder().label(MARKERSET_LABEL_WARPS).build());
+                final MarkerSet markerSetWarps = map.getMarkerSets().getOrDefault(MARKERSET_ID_WARPS, MarkerSet.builder()
+                        .label(MARKERSET_LABEL_WARPS)
+                        .toggleable(warpsToggleable)
+                        .defaultHidden(warpsDefaultHidden)
+                        .sorting(warpsSorting)
+                        .build());
                 String warpMarkerId = String.format("warp:%s:%s", map.getName(), warp);
                 Vector3d warpMarkerPos = Vector3d.from(warpLocation.getX(), warpLocation.getY(), warpLocation.getZ());
                 POIMarker warpMarker = POIMarker.builder()
                         .label(warpLabelFormat.replace("%warp%", warp))
                         .icon(getMarkerURL(map, ICON_ID_WARPS), Vector2i.from(19, 19))
                         .position(warpMarkerPos)
+                        .minDistance(warpsMinDistance)
+                        .maxDistance(warpsMaxDistance)
                         .build();
                 markerSetWarps.getMarkers().put(warpMarkerId, warpMarker);
                 map.getMarkerSets().put(MARKERSET_ID_WARPS, markerSetWarps);
@@ -189,13 +216,20 @@ public final class BlueMapEssentials extends JavaPlugin {
                     continue;
                 }
                 blueMap.getWorld(homeWorld.getUID()).ifPresent(blueWorld -> blueWorld.getMaps().forEach(map -> {
-                    final MarkerSet markerSetHomes = map.getMarkerSets().getOrDefault(MARKERSET_ID_HOMES, MarkerSet.builder().label(MARKERSET_LABEL_HOMES).build());
+                    final MarkerSet markerSetHomes = map.getMarkerSets().getOrDefault(MARKERSET_ID_HOMES, MarkerSet.builder()
+                            .label(MARKERSET_LABEL_HOMES)
+                            .toggleable(homesToggleable)
+                            .defaultHidden(homesDefaultHidden)
+                            .sorting(homesSorting)
+                            .build());
                     String homeMarkerId = String.format("home:%s:%s", user.getName(), home);
                     Vector3d homeMarkerPos = Vector3d.from(homeLocation.getX(), homeLocation.getY(), homeLocation.getZ());
                     POIMarker homeMarker = POIMarker.builder()
                             .label(homeLabelFormat.replace("%home%", home).replace("%player%", user.getName()))
                             .icon(getMarkerURL(map, ICON_ID_HOMES), Vector2i.from(18, 18))
                             .position(homeMarkerPos)
+                            .minDistance(homesMinDistance)
+                            .maxDistance(homesMaxDistance)
                             .build();
                     markerSetHomes.getMarkers().put(homeMarkerId, homeMarker);
                     map.getMarkerSets().put(MARKERSET_ID_HOMES, markerSetHomes);
